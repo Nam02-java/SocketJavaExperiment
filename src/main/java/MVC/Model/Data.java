@@ -1,28 +1,45 @@
 package MVC.Model;
 
 
+import MVC.Service.InterfaceService.File.ParseFile;
+import MVC.Service.ServiceImplenments.File.ParseFileImplementation;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Data {
     private final static ArrayList<Socket> clientSockets = new ArrayList<>();
     private final static int PORT = 8080;
     private final static String filePath = "E:\\Save.txt";
     private int startLine = 0;
-    private final static AtomicInteger currentID2 = new AtomicInteger(0);
+    private ParseFile parseFile;
+    private File file = new File(Data.getFilePath());
 
-    public static synchronized void testMethod(String input) {
-        System.out.println(input);
+    public Data() {
+        this.parseFile = new ParseFileImplementation();
     }
 
-    public synchronized String updateMaxReceivedId(int currentID, String input) {
-        //  ++currentID;
-        currentID2.set(currentID);
-        currentID2.incrementAndGet();
-        String fullMessage = currentID2 + ". " + input;
-        System.out.println(fullMessage);
+
+
+    public String updateMaxReceivedId(String input) {
+        int biggestID = parseFile.getBiggestID(file);
+        biggestID += 1;
+        String fullMessage = biggestID + "." + " " + input;
+        saveMessageToFile(fullMessage);
         return fullMessage;
+    }
+    public void saveMessageToFile(String message) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, true))) {
+            writer.write(message);
+            writer.newLine();
+            writer.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static ArrayList<Socket> getClientSockets() {
@@ -44,6 +61,8 @@ public class Data {
     public void setStartLine(int startLine) {
         this.startLine = startLine;
     }
+
+
 }
 
 

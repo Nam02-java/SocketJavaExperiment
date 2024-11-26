@@ -20,7 +20,6 @@ public class ServerManager {
     private PortConfig portConfig;
     private ClientConnectionHandler clientConnectionHandler;
 
-    public static Data shareData = new Data();
 
     public ServerManager() {
         this.portConfig = new PortConfig(new ServerInitializationImplementation());
@@ -37,8 +36,7 @@ public class ServerManager {
             InputDataFromClient inputDataFromClient = new InputDataFromClient(new SocketInputReaderImplementation());
             OutputDataToClient outputDataToClient = new OutputDataToClient(new SocketDataOutputImplementation(),
                     new ReadLogServerImplementation(),
-                  //  new Data(),
-                    shareData);
+                    new Data());
 
             new Thread(new IOManager(clientSocket, inputDataFromClient, outputDataToClient)).start();
         }
