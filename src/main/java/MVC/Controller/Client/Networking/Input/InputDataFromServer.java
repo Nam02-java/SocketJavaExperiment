@@ -31,23 +31,25 @@ public class InputDataFromServer {
 
                 while ((messageFromServer = inFromServer.readLine()) != null) {
 
-                    if (historySize == 0 && messageFromServer.contains("History Size:")) {
-                        historySize = parseString.getHistorySize(messageFromServer);
-                        continue;
-                    }
+                    System.out.println(messageFromServer);
 
-                    currentMessageId = parseString.getIDMessage(messageFromServer);
-
-                    map.put(currentMessageId, messageFromServer);
-
-                    long historyCount = map.values().stream().filter(value -> value.contains("Old message")).count();
-
-                    if (historyCount >= historySize) {
-                        historySize = 0;
-                        printMessage(map);
-                    } else if (historyCount == 0) {
-                        printMessage(map);
-                    }
+//                    if (historySize == 0 && messageFromServer.contains("History Size:")) {
+//                        historySize = parseString.getHistorySize(messageFromServer);
+//                        continue;
+//                    }
+//
+//                    currentMessageId = parseString.getIDMessage(messageFromServer);
+//
+//                    map.put(currentMessageId, messageFromServer);
+//
+//                    long historyCount = map.values().stream().filter(value -> value.contains("Old message")).count();
+//
+//                    if (historyCount >= historySize) {
+//                        historySize = 0;
+//                        printMessage(map);
+//                    } else if (historyCount == 0) {
+//                        printMessage(map);
+//                    }
                 }
 
             } catch (IOException e) {

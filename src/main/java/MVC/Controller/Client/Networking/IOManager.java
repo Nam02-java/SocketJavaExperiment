@@ -23,7 +23,7 @@ public class IOManager {
     public void initializeNetworking(Socket socket) throws IOException {
         inputDataFromServer.receiveData(socket);
         try {
-            outputDataToServer.sendData(socket);
+            outputDataToServer.start(socket);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
