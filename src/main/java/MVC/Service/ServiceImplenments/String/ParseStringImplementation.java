@@ -51,8 +51,9 @@ public class ParseStringImplementation implements ParseString {
 
         if (matcher.find()) {
             return Integer.parseInt(matcher.group());
+        } else {
+            return 1;
         }
-        return null;
     }
 
     @Override
