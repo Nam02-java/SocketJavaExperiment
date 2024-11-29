@@ -51,7 +51,22 @@ public class ParseStringImplementation implements ParseString {
 
         if (matcher.find()) {
             return Integer.parseInt(matcher.group());
+        } else {
+            return 1;
         }
-        return null;
+    }
+
+    @Override
+    public Boolean timeDistinguish(String input) {
+        return input.contains("Old message");
+    }
+
+    @Override
+    public Integer getHistorySize(String input) {
+        Integer historySize = 0;
+        if (input.startsWith("History Size:")) {
+            historySize = Integer.parseInt(input.split(":")[1].trim());
+        }
+        return historySize;
     }
 }

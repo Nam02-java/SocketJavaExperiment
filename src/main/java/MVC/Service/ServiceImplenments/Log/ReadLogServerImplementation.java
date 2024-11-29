@@ -19,7 +19,7 @@ public class ReadLogServerImplementation implements ReadLogServer {
     }
 
     @Override
-    public List<String> read(Data data) {
+     public List<String> read(Data data) {
         list.clear();
         int linesToRead = 5;
         int startLine = data.getStartLine();

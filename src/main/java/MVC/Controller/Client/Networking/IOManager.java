@@ -9,6 +9,8 @@ import MVC.Service.ServiceImplenments.IO.UserInputReceiverImplementation;
 import java.io.IOException;
 import java.net.Socket;
 
+
+
 public class IOManager {
     private InputDataFromServer inputDataFromServer;
     private OutputDataToServer outputDataToServer;
@@ -20,6 +22,10 @@ public class IOManager {
 
     public void initializeNetworking(Socket socket) throws IOException {
         inputDataFromServer.receiveData(socket);
-        outputDataToServer.sendData(socket);
+        try {
+            outputDataToServer.start(socket);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

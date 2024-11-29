@@ -1,13 +1,7 @@
 package MVC.Controller.Client.Networking.Input;
 
-import MVC.Service.Enum.Status;
-import MVC.Service.InterfaceService.File.ParseFile;
 import MVC.Service.InterfaceService.String.ParseString;
-import MVC.Service.LazySingleton.ID.BiggestID;
-import MVC.Service.LazySingleton.Status.StatusManager;
-import MVC.Service.LazySingleton.UserName.UserNameManager;
 import MVC.Service.InterfaceService.IO.SocketInputReader;
-import MVC.Service.ServiceImplenments.File.ParseFileImplementation;
 import MVC.Service.ServiceImplenments.String.ParseStringImplementation;
 
 import java.io.BufferedReader;
@@ -20,12 +14,10 @@ public class InputDataFromServer {
     private BufferedReader inFromServer;
     private SocketInputReader socketInputReader;
     private ParseString parseString;
-    private ParseFile parseFile;
 
     public InputDataFromServer(SocketInputReader socketInputReader) {
         this.socketInputReader = socketInputReader;
         this.parseString = new ParseStringImplementation();
-        this.parseFile = new ParseFileImplementation();
     }
 
     public void receiveData(Socket socket) throws IOException {
@@ -34,35 +26,49 @@ public class InputDataFromServer {
             try {
                 String messageFromServer;
                 int currentMessageId;
-                Map<Integer, String> messageMap = new TreeMap<>();
+                Integer historySize = 0;
+                Map<Integer, String> map = new TreeMap<>();
 
                 while ((messageFromServer = inFromServer.readLine()) != null) {
 
-                    String[] parts = messageFromServer.split("\\|", 3);
-                    Status status = Status.valueOf(parts[0].trim());
-                    String userName = parts[1].trim();
-                    String messageContent = parts[2].trim();
-
-                    System.out.println(UserNameManager.getInstance().getUsername());
-                    if (UserNameManager.getInstance().getUsername().equals(userName)) {
-                        StatusManager.getInstance().setCurrentStatus(status);
+                    if (historySize == 0 && messageFromServer.contains("History Size:")) {
+                        historySize = parseString.getHistorySize(messageFromServer);
+                        continue;
                     }
 
                     currentMessageId = parseString.getIDMessage(messageFromServer);
-                    messageMap.put(currentMessageId, messageContent);
 
-                    if (StatusManager.getInstance().getCurrentStatus() == Status.RELAX) {
-                        for (String message : messageMap.values()) {
-                            System.out.println(message);
+                    map.put(currentMessageId, messageFromServer);
+
+                    long historyCount = 0;
+                    for (String value : map.values()) {
+                        if (value.contains("Old message")) {
+                            historyCount++;
                         }
-                        messageMap.clear();
+                    }
+
+                    if (historyCount >= historySize) {
+                        historySize = 0;
+                        printMessage(map);
+                    } else if (historyCount == 0) {
+                        printMessage(map);
                     }
                 }
+
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
             }
         }).start();
+    }
+
+    public void printMessage(Map<Integer, String> map) {
+        for (Map.Entry<Integer, String> entry : map.entrySet()) {
+            Integer id = entry.getKey();
+            String message = entry.getValue();
+            System.out.println(message);
+        }
+        map.clear();
     }
 }
 

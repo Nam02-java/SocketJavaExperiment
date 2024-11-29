@@ -9,6 +9,9 @@ public interface ParseString {
 
     int getIDFromCurrentMessage(String fullText);
 
-    Integer  getIDMessage(String input);
+    Integer getIDMessage(String input);
 
+    Boolean timeDistinguish(String input);
+
+    Integer getHistorySize(String input);
 }
