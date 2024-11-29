@@ -35,6 +35,7 @@ public class OutputDataToServer {
 
     public void start(Socket serverSocket) throws InterruptedException {
         new Thread(() -> receiveAndSendMessages(serverSocket)).start();
+        
         Runnable initializeID = new Runnable() {
             @Override
             public void run() {
