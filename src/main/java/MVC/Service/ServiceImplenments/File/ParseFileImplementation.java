@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 
 public class ParseFileImplementation implements ParseFile {
     @Override
-    public synchronized int getBiggestID(File file) {
+    public int getBiggestID(File file) {
         int lastID = -1;
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {

@@ -3,6 +3,7 @@ package MVC.Service.ServiceImplenments.Log;
 import MVC.Model.Data;
 import MVC.Service.InterfaceService.File.ParseFile;
 import MVC.Service.InterfaceService.Log.ConsoleLoggerServer;
+import MVC.Service.LazySingleton.ID.IDManager;
 import MVC.Service.ServiceImplenments.File.ParseFileImplementation;
 
 import java.io.*;
@@ -73,3 +74,39 @@ public class ConsoleLoggerServerImplementation implements ConsoleLoggerServer {
 }
 
 
+class kakaka {
+
+    private int getLastIDFromFile(File file) {
+        int lastID = -1;
+
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            String lastLine = null;
+
+            while ((line = br.readLine()) != null) {
+                lastLine = line;
+            }
+
+            if (lastLine != null) {
+                Pattern pattern = Pattern.compile("^\\d+");
+                Matcher matcher = pattern.matcher(lastLine);
+
+                if (matcher.find()) {
+                    lastID = Integer.parseInt(matcher.group());
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return lastID;
+    }
+
+    public static void main(String[] args) {
+        kakaka k = new kakaka();
+        File file = new File(Data.getFilePath());
+        int a = k.getLastIDFromFile(file);
+        System.out.println(a);
+
+    }
+}

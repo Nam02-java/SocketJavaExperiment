@@ -20,13 +20,13 @@ public class ServerManager {
     private PortConfig portConfig;
     private ClientConnectionHandler clientConnectionHandler;
 
-
     public ServerManager() {
         this.portConfig = new PortConfig(new ServerInitializationImplementation());
         this.clientConnectionHandler = new ClientConnectionHandler();
     }
 
     public void initializeServer() throws IOException {
+
         ServerSocket serverSocket = portConfig.configure();
 
         while (true) {
@@ -34,9 +34,7 @@ public class ServerManager {
             Socket clientSocket = clientConnectionHandler.waitForClients(serverSocket);
 
             InputDataFromClient inputDataFromClient = new InputDataFromClient(new SocketInputReaderImplementation());
-            OutputDataToClient outputDataToClient = new OutputDataToClient(new SocketDataOutputImplementation(),
-                    new ReadLogServerImplementation(),
-                    new Data());
+            OutputDataToClient outputDataToClient = new OutputDataToClient(new SocketDataOutputImplementation(), new ReadLogServerImplementation(), new Data());
 
             new Thread(new IOManager(clientSocket, inputDataFromClient, outputDataToClient)).start();
         }

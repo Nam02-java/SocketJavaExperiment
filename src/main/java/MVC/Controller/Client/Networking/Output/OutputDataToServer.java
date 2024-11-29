@@ -1,75 +1,57 @@
 package MVC.Controller.Client.Networking.Output;
 
 import MVC.Model.Data;
-import MVC.Service.InterfaceService.File.SaveToFile;
-import MVC.Service.InterfaceService.ID.IDManager;
+import MVC.Service.Enum.Status;
+import MVC.Service.InterfaceService.File.ParseFile;
 import MVC.Service.InterfaceService.IO.SocketDataOutput;
 import MVC.Service.InterfaceService.IO.UserInputReceiver;
+import MVC.Service.LazySingleton.ID.IDManager;
+import MVC.Service.LazySingleton.Status.StatusManager;
 import MVC.Service.LazySingleton.UserName.UserNameManager;
-import MVC.Service.ServiceImplenments.File.SaveToFileImplementation;
-import MVC.Service.ServiceImplenments.ID.IDManagerImplementation;
+import MVC.Service.ServiceImplenments.File.ParseFileImplementation;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import static MVC.StartServer.taskManager;
 
 public class OutputDataToServer {
     private SocketDataOutput socketDataOutput;
     private UserInputReceiver userInputReceiver;
-    private IDManager idManager;
-    private SaveToFile saveToFile;
-    private BlockingQueue<String> rawMessageQueue;
+    private ParseFile parseFile;
+    private File file = new File(Data.getFilePath());
 
     public OutputDataToServer(SocketDataOutput socketDataOutput, UserInputReceiver userInputReceiver) {
         this.socketDataOutput = socketDataOutput;
         this.userInputReceiver = userInputReceiver;
-        this.idManager = new IDManagerImplementation();
-        this.saveToFile = new SaveToFileImplementation();
-        this.rawMessageQueue = new LinkedBlockingQueue<>();
+        this.parseFile = new ParseFileImplementation();
     }
 
-    public void start(Socket serverSocket) throws InterruptedException {
-        new Thread(() -> receiveAndSendMessages(serverSocket)).start();
-        Runnable initializeID = new Runnable() {
-            @Override
-            public void run() {
-                File file = new File(Data.getFilePath());
-                while (true) {
-                    try {
-                        String messageToSend = rawMessageQueue.take();
-                        int biggestID = idManager.updateMaxReceivedId(file);
-                        String fullMessage = biggestID + "." + " " + messageToSend;
+    public void sendData(Socket serverSocket) throws IOException {
+        BufferedReader userInput = userInputReceiver.getData();
+        while (true) {
+            String ID = null;
 
-                        if (!messageToSend.contains("1")) {
-                            saveToFile.saveMessageToFile(file, fullMessage);
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
+            String messageToSend = UserNameManager.getInstance().getUsername() + " : " + userInput.readLine();
+
+            if (file.length() == 0) {
+                IDManager.getInstance().updateMaxReceivedId(1);
+                ID = IDManager.getInstance().getMaxReceivedId() + "." + " ";
+            } else if (file.length() >= 1) {
+                IDManager.getInstance().updateMaxReceivedId(parseFile.getBiggestID(file) + 1);
+                ID = IDManager.getInstance().getMaxReceivedId() + "." + " ";
             }
-        };
-        taskManager.submitTask(initializeID);
-    }
+            StatusManager.getInstance().setCurrentStatus(Status.RELAX);
 
-    private void receiveAndSendMessages(Socket serverSocket) {
-        try (BufferedReader userInput = userInputReceiver.getData()) {
-            while (true) {
-                String messageToSend = UserNameManager.getInstance().getUsername() + " : " + userInput.readLine();
-
-                socketDataOutput.sendData(serverSocket, messageToSend);
-
-                rawMessageQueue.put(messageToSend);
+            String fullMessage = ID + messageToSend;
+            if (messageToSend.contains("1")) {
+                fullMessage = UserNameManager.getInstance().getUsername() + " : - request history data";
+                StatusManager.getInstance().setCurrentStatus(Status.LOADING);
             }
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            socketDataOutput.sendData(serverSocket,
+                    fullMessage,
+                    StatusManager.getInstance().getCurrentStatus(),
+                    UserNameManager.getInstance().getUsername());
         }
     }
 }
-
-
